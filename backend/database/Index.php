@@ -24,9 +24,16 @@
 
     require_once "impl/Users.php";
     if (mysqli_query($conn, Database\User::CREATE_TABLE)) {
-        echo "Table created successfully";
+        echo "Users table created successfully";
     } else {
-        echo "Error creating table: " . mysqli_error($conn);
+        echo "Error creating users table: " . mysqli_error($conn);
+    }
+
+    require_once "impl/Connectors.php";
+    if (mysqli_query($conn, Database\Connectors::CREATE_TABLE)) {
+        echo "Connectors table created successfully";
+    } else {
+        echo "Error creating connectors table: " . mysqli_error($conn);
     }
 
     mysqli_close($conn);

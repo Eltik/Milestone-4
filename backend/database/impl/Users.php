@@ -51,7 +51,32 @@
             );
         }
 
-        public function createUser(\mysqli $conn): bool {
+        public static function getUser(\mysqli $conn, string $id): ?User {
+            $stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE id = ?");
+            mysqli_stmt_bind_param($stmt, "s", $id);
+            mysqli_stmt_execute($stmt);
+
+            $result = mysqli_stmt_get_result($stmt);
+            $row = mysqli_fetch_assoc($result);
+            mysqli_stmt_close($stmt);
+
+            if (!$row) {
+                return null;
+            }
+
+            return new User(
+                $row["id"],
+                $row["email"],
+                $row["phone"],
+                $row["username"],
+                $row["password_hash"],
+                $row["created_at"],
+                $row["updated_at"],
+                json_decode($row["connector_ids"], true) ?? []
+            );
+        }
+
+        public function insertUser(\mysqli $conn): bool {
             $stmt = mysqli_prepare($conn,
                 "INSERT INTO users (id, email, phone, username, password_hash, created_at, updated_at, connector_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
             );

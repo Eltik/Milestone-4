@@ -1,4 +1,3 @@
 <?php
-class SomeClass {
-    
-}
+require_once __DIR__ . "/../database/Index.php";
+?>

@@ -15,6 +15,9 @@
         );
         ";
 
+        /**
+        * @param array $connectorIds
+        */
         public function __construct(
             public string $id,
             public string $email,
@@ -26,6 +29,9 @@
             public array $connectorIds = []
         ) {}
 
+        /**
+        * @param array $connectorIds
+        */
         public static function create(
             string $email,
             string $phone,

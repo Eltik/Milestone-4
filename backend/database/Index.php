@@ -14,7 +14,12 @@
     /**
      * Create Database
      */
-
+    require_once "impl/Users.php";
+    if (mysqli_query($conn, Database\User::CREATE_TABLE)) {
+        echo "Table created successfully";
+    } else {
+        echo "Error creating table: " . mysqli_error($conn);
+    }
 
     mysqli_close($conn);
 

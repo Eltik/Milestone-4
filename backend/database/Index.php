@@ -1,42 +1,44 @@
 <?php
-    $servername = "127.0.0.1";
-    $username = "postgres";
-    $password = "password";
-    $dbname = "milestone-4";
+    $servername = "p:127.0.0.1";
+    $username = "root";
+    $password = "";
+    $dbname = "milestone4";
 
     $conn = mysqli_connect($servername, $username, $password);
+
+    function logger(string $message): void {
+        file_put_contents("php://stdout", $message . "\n");
+    }
 
     if (!$conn) {
         die("Connection failed: " . mysqli_connect_error());
     }
-    echo "Connected successfully.";
+    logger("Connected successfully.");
 
     /**
      * Create Database
      */
     $sql = "CREATE DATABASE IF NOT EXISTS $dbname";
     if (mysqli_query($conn, $sql)) {
-        echo "Database ready.";
+        logger("Database ready.");
     } else {
-        echo "Error creating database: " . mysqli_error($conn);
+        logger("Error creating database: " . mysqli_error($conn));
     }
     mysqli_select_db($conn, $dbname);
 
     require_once "impl/Users.php";
     if (mysqli_query($conn, Database\User::CREATE_TABLE)) {
-        echo "Users table created successfully";
+        logger("Users table created successfully.");
     } else {
-        echo "Error creating users table: " . mysqli_error($conn);
+        logger("Error creating users table: " . mysqli_error($conn));
     }
 
     require_once "impl/Connectors.php";
     if (mysqli_query($conn, Database\Connectors::CREATE_TABLE)) {
-        echo "Connectors table created successfully";
+        logger("Connectors table created successfully.");
     } else {
-        echo "Error creating connectors table: " . mysqli_error($conn);
+        logger("Error creating connectors table: " . mysqli_error($conn));
     }
 
-    mysqli_close($conn);
-
-    echo "Closed connection.";
+    logger("Database initialized.");
 ?>

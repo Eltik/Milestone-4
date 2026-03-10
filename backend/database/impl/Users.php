@@ -5,7 +5,7 @@
         const CREATE_TABLE = "
         CREATE TABLE IF NOT EXISTS users (
             id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-            email VARCHAR(20),
+            email VARCHAR(50),
             phone VARCHAR(20) NOT NULL,
             username VARCHAR(20) NOT NULL,
             password_hash VARCHAR(255) NOT NULL,

@@ -9,7 +9,8 @@
             authentication_information JSON NOT NULL,
             portfolio JSON NOT NULL,
             created_at DATETIME NOT NULL,
-            updated_at DATETIME NOT NULL
+            updated_at DATETIME NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id)
         );
         ";
 

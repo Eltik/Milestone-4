@@ -1,0 +1,56 @@
+[
+    {
+        "symbol": "AAPL",
+        "name": "Apple Inc.",
+        "price": 178.50,
+        "change": 2.35,
+        "change_percent": 1.33,
+        "volume": 54230100,
+        "market_cap": 2780000000000
+    },
+    {
+        "symbol": "MSFT",
+        "name": "Microsoft Corporation",
+        "price": 415.20,
+        "change": -1.80,
+        "change_percent": -0.43,
+        "volume": 22140500,
+        "market_cap": 3090000000000
+    },
+    {
+        "symbol": "GOOGL",
+        "name": "Alphabet Inc.",
+        "price": 175.80,
+        "change": 3.10,
+        "change_percent": 1.80,
+        "volume": 28500300,
+        "market_cap": 2180000000000
+    },
+    {
+        "symbol": "TSLA",
+        "name": "Tesla Inc.",
+        "price": 248.90,
+        "change": -5.40,
+        "change_percent": -2.12,
+        "volume": 98200400,
+        "market_cap": 790000000000
+    },
+    {
+        "symbol": "AMZN",
+        "name": "Amazon.com Inc.",
+        "price": 185.60,
+        "change": 1.25,
+        "change_percent": 0.68,
+        "volume": 45100200,
+        "market_cap": 1920000000000
+    },
+    {
+        "symbol": "NVDA",
+        "name": "NVIDIA Corporation",
+        "price": 875.30,
+        "change": 12.50,
+        "change_percent": 1.45,
+        "volume": 41200800,
+        "market_cap": 2160000000000
+    }
+]

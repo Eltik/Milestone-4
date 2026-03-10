@@ -100,8 +100,58 @@
             return $result;
         }
 
+        public static function getUserByUsername(\mysqli $conn, string $username): ?User {
+            $stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE username = ?");
+            mysqli_stmt_bind_param($stmt, "s", $username);
+            mysqli_stmt_execute($stmt);
+
+            $result = mysqli_stmt_get_result($stmt);
+            $row = mysqli_fetch_assoc($result);
+            mysqli_stmt_close($stmt);
+
+            if (!$row) {
+                return null;
+            }
+
+            return new User(
+                $row["id"],
+                $row["email"],
+                $row["phone"],
+                $row["username"],
+                $row["password_hash"],
+                $row["created_at"],
+                $row["updated_at"],
+                json_decode($row["connector_ids"], true) ?? []
+            );
+        }
+
+        public static function getUserByEmail(\mysqli $conn, string $email): ?User {
+            $stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE email = ?");
+            mysqli_stmt_bind_param($stmt, "s", $email);
+            mysqli_stmt_execute($stmt);
+
+            $result = mysqli_stmt_get_result($stmt);
+            $row = mysqli_fetch_assoc($result);
+            mysqli_stmt_close($stmt);
+
+            if (!$row) {
+                return null;
+            }
+
+            return new User(
+                $row["id"],
+                $row["email"],
+                $row["phone"],
+                $row["username"],
+                $row["password_hash"],
+                $row["created_at"],
+                $row["updated_at"],
+                json_decode($row["connector_ids"], true) ?? []
+            );
+        }
+
         public function verifyPassword(string $password): bool {
-            return password_verify($password, $this->password_hash);
+            return password_verify($password, $this->passwordHash);
         }
 
         private static function generateUUID(): string {

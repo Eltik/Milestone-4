@@ -1,0 +1,56 @@
+[
+    {
+        "symbol": "AAPL",
+        "shortName": "Apple Inc.",
+        "regularMarketPrice": 178.50,
+        "regularMarketChange": 2.35,
+        "regularMarketChangePercent": 1.33,
+        "regularMarketVolume": 54230100,
+        "marketCap": 2780000000000
+    },
+    {
+        "symbol": "META",
+        "shortName": "Meta Platforms Inc.",
+        "regularMarketPrice": 505.40,
+        "regularMarketChange": 8.20,
+        "regularMarketChangePercent": 1.65,
+        "regularMarketVolume": 18900600,
+        "marketCap": 1290000000000
+    },
+    {
+        "symbol": "JPM",
+        "shortName": "JPMorgan Chase & Co.",
+        "regularMarketPrice": 198.75,
+        "regularMarketChange": -0.50,
+        "regularMarketChangePercent": -0.25,
+        "regularMarketVolume": 9800400,
+        "marketCap": 572000000000
+    },
+    {
+        "symbol": "V",
+        "shortName": "Visa Inc.",
+        "regularMarketPrice": 280.30,
+        "regularMarketChange": 1.90,
+        "regularMarketChangePercent": 0.68,
+        "regularMarketVolume": 7200300,
+        "marketCap": 575000000000
+    },
+    {
+        "symbol": "NVDA",
+        "shortName": "NVIDIA Corporation",
+        "regularMarketPrice": 875.30,
+        "regularMarketChange": 12.50,
+        "regularMarketChangePercent": 1.45,
+        "regularMarketVolume": 41200800,
+        "marketCap": 2160000000000
+    },
+    {
+        "symbol": "DIS",
+        "shortName": "The Walt Disney Company",
+        "regularMarketPrice": 112.40,
+        "regularMarketChange": -1.30,
+        "regularMarketChangePercent": -1.14,
+        "regularMarketVolume": 12500700,
+        "marketCap": 205000000000
+    }
+]

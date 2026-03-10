@@ -1,0 +1,62 @@
+{
+    "account": {
+        "account_number": "RH-123456789",
+        "buying_power": 5432.10,
+        "cash": 3200.00,
+        "portfolio_value": 48750.25,
+        "total_return": 6230.50,
+        "total_return_percent": 14.65
+    },
+    "holdings": [
+        {
+            "symbol": "AAPL",
+            "name": "Apple Inc.",
+            "quantity": 25,
+            "average_cost": 145.00,
+            "current_price": 178.50,
+            "total_value": 4462.50,
+            "gain_loss": 837.50,
+            "gain_loss_percent": 23.10
+        },
+        {
+            "symbol": "MSFT",
+            "name": "Microsoft Corporation",
+            "quantity": 15,
+            "average_cost": 280.00,
+            "current_price": 415.20,
+            "total_value": 6228.00,
+            "gain_loss": 2028.00,
+            "gain_loss_percent": 48.29
+        },
+        {
+            "symbol": "GOOGL",
+            "name": "Alphabet Inc.",
+            "quantity": 10,
+            "average_cost": 120.00,
+            "current_price": 175.80,
+            "total_value": 1758.00,
+            "gain_loss": 558.00,
+            "gain_loss_percent": 46.50
+        },
+        {
+            "symbol": "TSLA",
+            "name": "Tesla Inc.",
+            "quantity": 20,
+            "average_cost": 210.00,
+            "current_price": 248.90,
+            "total_value": 4978.00,
+            "gain_loss": 778.00,
+            "gain_loss_percent": 18.52
+        },
+        {
+            "symbol": "AMZN",
+            "name": "Amazon.com Inc.",
+            "quantity": 30,
+            "average_cost": 135.00,
+            "current_price": 185.60,
+            "total_value": 5568.00,
+            "gain_loss": 1518.00,
+            "gain_loss_percent": 37.48
+        }
+    ]
+}

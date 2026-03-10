@@ -1,0 +1,61 @@
+{
+    "account": {
+        "accountId": "YF-987654321",
+        "availableCash": 8150.75,
+        "totalMarketValue": 62340.80,
+        "totalGainLoss": 9870.30,
+        "totalGainLossPercent": 18.81
+    },
+    "holdings": [
+        {
+            "symbol": "AAPL",
+            "shortName": "Apple Inc.",
+            "sharesOwned": 40,
+            "averageCostBasis": 150.25,
+            "regularMarketPrice": 178.50,
+            "marketValue": 7140.00,
+            "gainLoss": 1130.00,
+            "gainLossPercent": 18.80
+        },
+        {
+            "symbol": "META",
+            "shortName": "Meta Platforms Inc.",
+            "sharesOwned": 18,
+            "averageCostBasis": 310.00,
+            "regularMarketPrice": 505.40,
+            "marketValue": 9097.20,
+            "gainLoss": 3517.20,
+            "gainLossPercent": 63.00
+        },
+        {
+            "symbol": "JPM",
+            "shortName": "JPMorgan Chase & Co.",
+            "sharesOwned": 25,
+            "averageCostBasis": 155.00,
+            "regularMarketPrice": 198.75,
+            "marketValue": 4968.75,
+            "gainLoss": 1093.75,
+            "gainLossPercent": 28.23
+        },
+        {
+            "symbol": "V",
+            "shortName": "Visa Inc.",
+            "sharesOwned": 20,
+            "averageCostBasis": 240.00,
+            "regularMarketPrice": 280.30,
+            "marketValue": 5606.00,
+            "gainLoss": 806.00,
+            "gainLossPercent": 16.79
+        },
+        {
+            "symbol": "NVDA",
+            "shortName": "NVIDIA Corporation",
+            "sharesOwned": 12,
+            "averageCostBasis": 650.00,
+            "regularMarketPrice": 875.30,
+            "marketValue": 10503.60,
+            "gainLoss": 2703.60,
+            "gainLossPercent": 34.66
+        }
+    ]
+}

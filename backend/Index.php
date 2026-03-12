@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-require_once __DIR__ . "/database/index.php"; // This file should define $conn
+require_once __DIR__ . "/database/index.php"; 
 require_once __DIR__ . "/database/impl/Connectors.php";
 
 $uri = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
@@ -15,10 +15,7 @@ $isLoggedIn = !empty($_SESSION["user_id"]);
 $hasConnectors = false;
 
 if ($isLoggedIn) {
-    // This MUST use the current session's ID
     $userConnectors = \Database\Connectors::getConnectorsByUser($conn, $_SESSION["user_id"]);
-
-    // Check if the array is actually empty
     $hasConnectors = (is_array($userConnectors) && count($userConnectors) > 0);
 }
 ?>
@@ -479,31 +476,6 @@ if ($isLoggedIn) {
         // Remove specific rhPortfolio/yfPortfolio variables. Use these instead:
         let userHoldings = {};
         let userConnectors = [];
-
-        // async function fetchData() {
-        //     try {
-        //         // Fetch 1: Portfolio Data (Holdings, Net Worth)
-        //         const portfolioRes = await fetch("/api/user/portfolio");
-        //         const portfolioData = await portfolioRes.json();
-        //         console.log(portfolioData)
-        //         // Fetch 2: Connector Data (The Left Column Cards)
-        //         const connectorRes = await fetch("/api/user/connectors");
-        //         const connectorData = await connectorRes.json();
-        //         console.log(connectorData)
-
-        //         if (portfolioRes.ok && portfolioData.holdings) {
-        //             renderHoldings(portfolioData.holdings);
-        //             updateNetWorth(portfolioData.holdings);
-        //         }
-
-        //         if (connectorRes.ok) {
-        //             // Pass the results to your existing render function
-        //             renderAccounts(connectorData);
-        //         }
-        //     } catch (err) {
-        //         console.error("Dashboard Sync Error:", err);
-        //     }
-        // }
 
 async function fetchData() {
     try {

@@ -1,13 +1,17 @@
 <?php
-    $servername = "p:127.0.0.1";
+    // $servername = "p:127.0.0.1";
+    $servername = "127.0.0.1"; 
     $username = "root";
-    $password = "password";
+    $password = ""; 
     $dbname = "milestone4";
 
     $conn = mysqli_connect($servername, $username, $password);
 
-    function logger(string $message): void {
-        file_put_contents("php://stdout", $message . "\n");
+    // FIX: Wrap the function to prevent redeclaration errors during API calls
+    if (!function_exists('logger')) {
+        function logger(string $message): void {
+            file_put_contents("php://stdout", $message . "\n");
+        }
     }
 
     if (!$conn) {
@@ -26,6 +30,7 @@
     }
     mysqli_select_db($conn, $dbname);
 
+    // Initialize Users
     require_once "impl/Users.php";
     if (mysqli_query($conn, Database\User::CREATE_TABLE)) {
         logger("Users table created successfully.");
@@ -33,11 +38,20 @@
         logger("Error creating users table: " . mysqli_error($conn));
     }
 
+    // Initialize Connectors
     require_once "impl/Connectors.php";
     if (mysqli_query($conn, Database\Connectors::CREATE_TABLE)) {
         logger("Connectors table created successfully.");
     } else {
         logger("Error creating connectors table: " . mysqli_error($conn));
+    }
+
+    // Initialize Portfolios
+    require_once "impl/Portfolios.php";
+    if (mysqli_query($conn, Database\Portfolios::CREATE_TABLE)) {
+        logger("Portfolios table created successfully.");
+    } else {
+        logger("Error creating portfolios table: " . mysqli_error($conn));
     }
 
     logger("Database initialized.");

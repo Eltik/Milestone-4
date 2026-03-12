@@ -507,26 +507,29 @@ if ($isLoggedIn) {
 
 async function fetchData() {
     try {
-        const res = await fetch("/api/user/portfolio");
-        const data = await res.json();
-        
-        if (res.ok) {
-            // Update the accounts list (the left column cards)
-            if (data.connectors) {
-                renderAccounts(data.connectors);
-            }
+        // Fetch both concurrently for efficiency
+        const [portfolioRes, connectorRes] = await Promise.all([
+            fetch("/api/user/portfolio"),
+            fetch("/api/user/connectors")
+        ]);
 
-            // Update the holdings and net worth
-            if (data.holdings) {
-                renderHoldings(data.holdings);
-                updateNetWorth(data.holdings);
-            }
+        const portfolioData = await portfolioRes.json();
+        const connectorData = await connectorRes.json();
+
+        // 1. Render Accounts (Left Column)
+        if (connectorRes.ok) {
+            renderAccounts(connectorData);
+        }
+
+        // 2. Render Holdings (Right Column)
+        if (portfolioRes.ok && portfolioData.holdings) {
+            renderHoldings(portfolioData.holdings);
+            updateNetWorth(portfolioData.holdings);
         }
     } catch (err) {
-        console.error("Sync Error:", err);
+        console.error("Dashboard Sync Error:", err);
     }
 }
-
         function renderAccounts(connectors) {
             console.log("Raw Connectors Data:", connectors);
 

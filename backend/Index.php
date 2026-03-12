@@ -480,76 +480,96 @@ if ($isLoggedIn) {
         let userHoldings = {};
         let userConnectors = [];
 
-        async function fetchData() {
-            try {
-                const res = await fetch("/api/user/portfolio");
-                const data = await res.json();
+        // async function fetchData() {
+        //     try {
+        //         // Fetch 1: Portfolio Data (Holdings, Net Worth)
+        //         const portfolioRes = await fetch("/api/user/portfolio");
+        //         const portfolioData = await portfolioRes.json();
+        //         console.log(portfolioData)
+        //         // Fetch 2: Connector Data (The Left Column Cards)
+        //         const connectorRes = await fetch("/api/user/connectors");
+        //         const connectorData = await connectorRes.json();
+        //         console.log(connectorData)
 
-                if (res.ok) {
-                    // Update the accounts list (the left column cards)
-                    if (data.connectors) {
-                        renderAccounts(data.connectors);
-                    }
+        //         if (portfolioRes.ok && portfolioData.holdings) {
+        //             renderHoldings(portfolioData.holdings);
+        //             updateNetWorth(portfolioData.holdings);
+        //         }
 
-                    // Update the holdings and net worth
-                    if (data.holdings) {
-                        renderHoldings(data.holdings);
-                        updateNetWorth(data.holdings);
-                    }
-                }
-            } catch (err) {
-                console.error("Sync Error:", err);
+        //         if (connectorRes.ok) {
+        //             // Pass the results to your existing render function
+        //             renderAccounts(connectorData);
+        //         }
+        //     } catch (err) {
+        //         console.error("Dashboard Sync Error:", err);
+        //     }
+        // }
+
+async function fetchData() {
+    try {
+        const res = await fetch("/api/user/portfolio");
+        const data = await res.json();
+        
+        if (res.ok) {
+            // Update the accounts list (the left column cards)
+            if (data.connectors) {
+                renderAccounts(data.connectors);
+            }
+
+            // Update the holdings and net worth
+            if (data.holdings) {
+                renderHoldings(data.holdings);
+                updateNetWorth(data.holdings);
             }
         }
-
-function renderAccounts(connectors) {
-    const list = document.getElementById("accounts-list");
-    if (!list) return;
-    list.innerHTML = "";
-
-    // Convert object to array if needed
-    const accounts = Array.isArray(connectors) ? connectors : Object.values(connectors || {});
-
-    if (accounts.length === 0) {
-        list.innerHTML = `<p class="text-xs text-gray-400 italic p-4 text-center">No accounts connected.</p>`;
-        return;
+    } catch (err) {
+        console.error("Sync Error:", err);
     }
+}
 
-    accounts.forEach(conn => {
-        if (!conn) return;
+        function renderAccounts(connectors) {
+            console.log("Raw Connectors Data:", connectors);
 
-        // PHP uses snake_case: authentication_information
-        const info = conn.authentication_information || {};
-        const provider = info.provider || conn.provider || "Manual Source";
-        const id = conn.id ? conn.id.slice(-6) : "000000";
+            const list = document.getElementById("accounts-list");
+            if (!list) return;
 
-        const card = document.createElement("div");
-        card.className = "bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:border-gray-300 transition-colors";
-        card.innerHTML = `
-            <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center border border-gray-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-black">
+            list.innerHTML = "";
+
+            const accounts = Array.isArray(connectors) ? connectors : Object.values(connectors || {});
+
+            if (accounts.length === 0) {
+                list.innerHTML = `<p class="text-xs text-gray-400 italic p-4 text-center">No accounts found.</p>`;
+                return;
+            }
+
+            accounts.forEach(conn => {
+                // Try every possible naming convention for the provider
+                const info = conn.authentication_information || conn.authenticationInformation || {};
+                const provider = info.provider || conn.provider || "Unknown Source";
+                const id = conn.id ? conn.id.slice(-6) : "......";
+
+                const card = document.createElement("div");
+                card.className = "bg-white border border-gray-200 rounded-xl p-4 shadow-sm mb-3";
+                card.innerHTML = `
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center border border-gray-100 text-black">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                     </svg>
                 </div>
                 <div>
                     <h4 class="text-sm font-medium text-black capitalize">${provider}</h4>
-                    <p class="text-[10px] text-gray-400 uppercase tracking-widest font-mono">ID: ...${id}</p>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-widest">ID: ...${id}</p>
                 </div>
             </div>
-            <div class="pt-3 border-t border-gray-100 flex items-center gap-1.5">
-                <span class="relative flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Active</span>
-            </div>
         `;
-        list.appendChild(card);
-    });
-}
+                list.appendChild(card);
+            });
+        }
 
-function renderSummary() {
+
+
+        function renderSummary() {
             const rhValue = rhPortfolio.account.portfolio_value;
             const yfValue = yfPortfolio.account.totalMarketValue;
             const total = rhValue + yfValue;
@@ -570,75 +590,75 @@ function renderSummary() {
 
 
         // 1. Helper to group stocks by symbol
-function getAggregatedHoldings(rawHoldings) {
-    const grouped = {};
-    
-    // Ensure rawHoldings is an object we can iterate
-    if (!rawHoldings || typeof rawHoldings !== 'object') return {};
+        function getAggregatedHoldings(rawHoldings) {
+            const grouped = {};
 
-    Object.entries(rawHoldings).forEach(([ticker, data]) => {
-        if (!data) return; // Skip if data is null
+            // Ensure rawHoldings is an object we can iterate
+            if (!rawHoldings || typeof rawHoldings !== 'object') return {};
 
-        const symbol = ticker; 
-        const qty = parseFloat(data.qty) || 0;
-        // Check for 'price' or fallback to a default for now
-        const price = parseFloat(data.price) || 150; 
+            Object.entries(rawHoldings).forEach(([ticker, data]) => {
+                if (!data) return; // Skip if data is null
 
-        if (!grouped[symbol]) {
-            grouped[symbol] = {
-                symbol: symbol,
-                qty: 0,
-                price: price,
-                sources: new Set()
-            };
-        }
-        
-        grouped[symbol].qty += qty;
+                const symbol = ticker;
+                const qty = parseFloat(data.qty) || 0;
+                // Check for 'price' or fallback to a default for now
+                const price = parseFloat(data.price) || 150;
 
-        // Handle the 'sources' array from your new PHP logic 
-        // OR the single 'source' string from the old logic
-        if (Array.isArray(data.sources)) {
-            data.sources.forEach(s => {
-                if (s.name) grouped[symbol].sources.add(s.name);
+                if (!grouped[symbol]) {
+                    grouped[symbol] = {
+                        symbol: symbol,
+                        qty: 0,
+                        price: price,
+                        sources: new Set()
+                    };
+                }
+
+                grouped[symbol].qty += qty;
+
+                // Handle the 'sources' array from your new PHP logic 
+                // OR the single 'source' string from the old logic
+                if (Array.isArray(data.sources)) {
+                    data.sources.forEach(s => {
+                        if (s.name) grouped[symbol].sources.add(s.name);
+                    });
+                } else if (data.source) {
+                    grouped[symbol].sources.add(data.source);
+                }
             });
-        } else if (data.source) {
-            grouped[symbol].sources.add(data.source);
+
+            return grouped;
         }
-    });
-    
-    return grouped;
-}
 
-function renderHoldings(rawHoldings) {
-    const tbody = document.getElementById("holdings-table");
-    if (!tbody) return;
-    tbody.innerHTML = "";
+        function renderHoldings(rawHoldings) {
+            const tbody = document.getElementById("holdings-table");
+            if (!tbody) return;
+            tbody.innerHTML = "";
 
-    const aggregated = getAggregatedHoldings(rawHoldings);
-    const symbols = Object.keys(aggregated);
+            const aggregated = getAggregatedHoldings(rawHoldings);
+            const symbols = Object.keys(aggregated);
 
-    if (symbols.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-12 text-gray-400">No holdings found.</td></tr>';
-        return;
-    }
+            if (symbols.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-12 text-gray-400">No holdings found.</td></tr>';
+                return;
+            }
 
-    symbols.forEach(symbol => {
-        const data = aggregated[symbol];
-        const totalValue = data.qty * data.price;
+            symbols.forEach(symbol => {
+                const data = aggregated[symbol];
+                const totalValue = data.qty * data.price;
 
-        // 1. Create the row element first
-        const row = document.createElement("tr");
-        row.className = "border-b border-gray-50 hover:bg-gray-50/50 transition-colors";
+                // 1. Create the row element first
+                const row = document.createElement("tr");
+                row.className = "border-b border-gray-50 hover:bg-gray-50/50 transition-colors";
 
-        // 2. Generate the source badges
-        const sourceTags = Array.from(data.sources).map(src => `
+                // 2. Generate the source badges
+                const sourceTags = Array.from(data.sources).map(src => `
             <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-gray-100 text-gray-400 border border-gray-200">
                 ${src}
             </span>
         `).join("");
 
-        // 3. Set the row content
-        row.innerHTML = `
+                // 3. Set the row content
+                row.innerHTML = `
             <td class="px-4 py-4 text-sm font-medium text-black">${data.symbol}</td>
             <td class="px-4 py-4 text-sm text-right text-gray-600">${data.qty.toLocaleString()}</td>
             <td class="px-4 py-4 text-sm text-right text-gray-600">${fmt(data.price)}</td>
@@ -650,10 +670,10 @@ function renderHoldings(rawHoldings) {
             </td>
         `;
 
-        // 4. Append the finished row to the table
-        tbody.appendChild(row);
-    });
-}
+                // 4. Append the finished row to the table
+                tbody.appendChild(row);
+            });
+        }
         function renderMarketOverview() {
             const grid = document.getElementById("market-grid");
             const indices = [
@@ -670,20 +690,29 @@ function renderHoldings(rawHoldings) {
         `).join('');
         }
 
-function updateNetWorth(rawHoldings) {
-    let total = 0;
-    
-    Object.values(rawHoldings).forEach(item => {
-        const q = parseFloat(item.qty) || 0;
-        const p = parseFloat(item.price) || 0;
-        total += (q * p);
-    });
-    
-    const netWorthEl = document.getElementById("net-worth");
-    if (netWorthEl) {
-        netWorthEl.textContent = fmt(total);
-    }
-}
+        function updateNetWorth(rawHoldings) {
+            let total = 0;
+
+            // rawHoldings is an object where keys are Tickers
+            Object.values(rawHoldings || {}).forEach(item => {
+                const q = parseFloat(item.qty) || 0;
+                // Fallback to 150 (or any number) if item.price is missing
+                const p = parseFloat(item.price) || 150;
+                total += (q * p);
+            });
+
+            const netWorthEl = document.getElementById("net-worth");
+            if (netWorthEl) {
+                netWorthEl.textContent = fmt(total);
+            }
+
+            // Also update the "Last Updated" timestamp
+            const lastUpdatedEl = document.getElementById("last-updated");
+            if (lastUpdatedEl) {
+                lastUpdatedEl.textContent = "Last updated: " + new Date().toLocaleTimeString();
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             const dashboard = document.getElementById("dashboard");
             if (dashboard && !dashboard.classList.contains("hidden")) {

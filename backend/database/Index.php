@@ -7,7 +7,6 @@
 
     $conn = mysqli_connect($servername, $username, $password);
 
-    // FIX: Wrap the function to prevent redeclaration errors during API calls
     if (!function_exists('logger')) {
         function logger(string $message): void {
             file_put_contents("php://stdout", $message . "\n");

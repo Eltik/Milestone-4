@@ -1,8 +1,7 @@
 <?php
-    // $servername = "p:127.0.0.1";
-    $servername = "127.0.0.1"; 
-    $username = "root";
-    $password = ""; 
+    $servername = "p:127.0.0.1";
+    $username = "username";
+    $password = "";
     $dbname = "milestone4";
 
     $conn = mysqli_connect($servername, $username, $password);

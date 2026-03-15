@@ -11,10 +11,66 @@ if (str_starts_with($uri, "/api")) {
     exit;
 }
 
+// Admin route guard
+if ($uri === "/admin") {
+    if (empty($_SESSION["user_id"])) {
+        header("Location: /");
+        exit;
+    }
+    $adminUser = \Database\User::getUser($conn, $_SESSION["user_id"]);
+    if (!$adminUser || !$adminUser->isAdmin()) {
+        header("Location: /");
+        exit;
+    }
+    ?>
+    <html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Ledgerline | Admin</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-white text-gray-900 font-sans antialiased min-h-screen">
+        <header class="bg-white border-b border-gray-200">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center gap-2">
+                        <div class="bg-black text-white p-1.5 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                                class="w-5 h-5">
+                                <path d="M5 21v-6" />
+                                <path d="M12 21V3" />
+                                <path d="M19 21V9" />
+                            </svg>
+                        </div>
+                        <span class="text-lg tracking-tight font-medium text-black">Ledgerline</span>
+                        <span class="text-xs bg-black text-white px-2 py-0.5 rounded-md font-medium ml-2">Admin</span>
+                    </div>
+                    <a href="/" class="text-sm text-gray-500 hover:text-black transition-colors">Back to Dashboard</a>
+                </div>
+            </div>
+        </header>
+        <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <h1 class="text-2xl font-medium mb-2">Admin Panel</h1>
+            <p class="text-gray-500 mb-8">Welcome, <?php echo htmlspecialchars($adminUser->username); ?>.</p>
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-6">
+                <p class="text-sm text-gray-600">Admin functionality coming soon.</p>
+            </div>
+        </main>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+
 $isLoggedIn = !empty($_SESSION["user_id"]);
 $hasConnectors = false;
+$isAdmin = false;
 
 if ($isLoggedIn) {
+    $currentUser = \Database\User::getUser($conn, $_SESSION["user_id"]);
+    $isAdmin = $currentUser && $currentUser->isAdmin();
     $userConnectors = \Database\Connectors::getConnectorsByUser($conn, $_SESSION["user_id"]);
     $hasConnectors = (is_array($userConnectors) && count($userConnectors) > 0);
 }
@@ -142,6 +198,9 @@ if ($isLoggedIn) {
                     </div>
 
                     <div class="flex items-center gap-4">
+                        <?php if ($isAdmin): ?>
+                            <a href="/admin" class="text-sm font-medium text-black hover:underline">Admin</a>
+                        <?php endif; ?>
                         <span id="user-greeting" class="text-sm text-gray-500 hidden md:inline"></span>
                         <button class="text-gray-400 hover:text-black transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"

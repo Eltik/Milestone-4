@@ -1,7 +1,7 @@
 <?php
     $servername = "p:127.0.0.1";
-    $username = "milestone4";
-    $password = "password";
+    $username = "root";
+    $password = "";
     $dbname = "milestone4";
 
     $conn = mysqli_connect($servername, $username, $password);
@@ -34,6 +34,13 @@
         logger("Users table created successfully.");
     } else {
         logger("Error creating users table: " . mysqli_error($conn));
+    }
+
+    // Add role column if it doesn't exist (migration for existing databases)
+    $result = mysqli_query($conn, "SHOW COLUMNS FROM users LIKE 'role'");
+    if ($result && mysqli_num_rows($result) === 0) {
+        mysqli_query($conn, "ALTER TABLE users ADD COLUMN role ENUM('user','admin') NOT NULL DEFAULT 'user' AFTER password_hash");
+        logger("Added role column to users table.");
     }
 
     // Initialize Connectors

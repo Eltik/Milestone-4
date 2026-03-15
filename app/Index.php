@@ -31,7 +31,8 @@
             "username" => $user->username,
             "connectorIds" => $user->connectorIds,
             "createdAt" => $user->createdAt,
-            "updatedAt" => $user->updatedAt
+            "updatedAt" => $user->updatedAt,
+            "role" => $user->role
         ];
     }
 
@@ -93,6 +94,20 @@
         jsonResponse(200, ["message" => "Logged out"]);
     }
 
+    // AUTH: Get Current User
+    elseif ($uri === "/api/auth/me" && $method === "GET") {
+        if (empty($_SESSION["user_id"])) {
+            jsonResponse(401, ["error" => "Not authenticated"]);
+            exit;
+        }
+        $user = Database\User::getUser($conn, $_SESSION["user_id"]);
+        if (!$user) {
+            jsonResponse(401, ["error" => "User not found"]);
+            exit;
+        }
+        jsonResponse(200, ["user" => userToArray($user)]);
+    }
+
     // USER: Get Current Portfolio
     elseif ($uri === "/api/user/portfolio" && $method === "GET") {
         if (empty($_SESSION["user_id"])) {
@@ -127,25 +142,25 @@ elseif ($uri === "/api/sources/connect" && $method === "POST") {
         jsonResponse(401, ["error" => "Not authenticated"]);
         exit;
     }
-    
+
     $body = getRequestBody();
     $userId = $_SESSION["user_id"];
-    
+
     // 1. Capture the provider name from the request (e.g., 'robinhood' or 'yahoo')
     $providerName = $body["provider"] ?? 'robinhood';
-    
+
     $authInfo = [
-        "simulated" => true, 
+        "simulated" => true,
         "provider" => $providerName
     ];
-    
+
     $connector = Database\Connectors::create($userId, $authInfo);
-    
+
     if ($connector->insertConnector($conn)) {
         // 2. Pass the provider name to the seeder so it can label the stocks
         // We use ucfirst() to make it look nice, like "Robinhood"
         Database\Portfolios::seedRandomPortfolio($conn, $userId, ucfirst($providerName));
-        
+
         jsonResponse(201, ["status" => "success"]);
     } else {
         jsonResponse(500, ["error" => "Failed to connect"]);

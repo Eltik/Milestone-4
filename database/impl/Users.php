@@ -9,6 +9,7 @@
             phone VARCHAR(20) NOT NULL,
             username VARCHAR(20) NOT NULL,
             password_hash VARCHAR(255) NOT NULL,
+            role ENUM('user', 'admin') NOT NULL DEFAULT 'user',
             connector_ids JSON NOT NULL,
             created_at DATETIME NOT NULL,
             updated_at DATETIME NOT NULL
@@ -26,8 +27,13 @@
             private string $passwordHash,
             public ?string $createdAt = null,
             public ?string $updatedAt = null,
-            public array $connectorIds = []
+            public array $connectorIds = [],
+            public string $role = 'user'
         ) {}
+
+        public function isAdmin(): bool {
+            return $this->role === 'admin';
+        }
 
         /**
         * @param array $connectorIds
@@ -72,7 +78,8 @@
                 $row["password_hash"],
                 $row["created_at"],
                 $row["updated_at"],
-                json_decode($row["connector_ids"], true) ?? []
+                json_decode($row["connector_ids"], true) ?? [],
+                $row["role"] ?? 'user'
             );
         }
 
@@ -121,7 +128,8 @@
                 $row["password_hash"],
                 $row["created_at"],
                 $row["updated_at"],
-                json_decode($row["connector_ids"], true) ?? []
+                json_decode($row["connector_ids"], true) ?? [],
+                $row["role"] ?? 'user'
             );
         }
 
@@ -146,7 +154,8 @@
                 $row["password_hash"],
                 $row["created_at"],
                 $row["updated_at"],
-                json_decode($row["connector_ids"], true) ?? []
+                json_decode($row["connector_ids"], true) ?? [],
+                $row["role"] ?? 'user'
             );
         }
 

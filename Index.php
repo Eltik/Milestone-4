@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-require_once __DIR__ . "/database/index.php"; 
+require_once __DIR__ . "/database/Index.php";
 require_once __DIR__ . "/database/impl/Connectors.php";
 
 $uri = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
@@ -445,7 +445,7 @@ if ($isLoggedIn) {
         }
 
 
-        // ---- Add new Data Source ----            
+        // ---- Add new Data Source ----
         function toggleSourceModal() {
             const modal = document.getElementById('source-modal');
             modal.classList.toggle('hidden');
@@ -472,7 +472,7 @@ if ($isLoggedIn) {
                 console.error("Connection error:", err);
             }
         }
-        // ---- Dashboard ----            
+        // ---- Dashboard ----
         // Remove specific rhPortfolio/yfPortfolio variables. Use these instead:
         let userHoldings = {};
         let userConnectors = [];
@@ -590,7 +590,7 @@ async function fetchData() {
 
                 grouped[symbol].qty += qty;
 
-                // Handle the 'sources' array from your new PHP logic 
+                // Handle the 'sources' array from your new PHP logic
                 // OR the single 'source' string from the old logic
                 if (Array.isArray(data.sources)) {
                     data.sources.forEach(s => {

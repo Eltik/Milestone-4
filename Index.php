@@ -327,7 +327,7 @@ if ($isLoggedIn) {
                         <?php if ($isAdmin): ?>
                             <a href="/admin" class="text-sm font-medium text-black hover:underline">Admin</a>
                         <?php endif; ?>
-                        <span id="user-greeting" class="text-sm text-gray-500 hidden md:inline"></span>
+                        <span id="user-greeting" class="text-sm text-gray-500 hidden md:inline"><?php if ($isLoggedIn && isset($currentUser)) echo "Hi, " . htmlspecialchars($currentUser->username); ?></span>
                         <button class="text-gray-400 hover:text-black transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
@@ -443,16 +443,27 @@ if ($isLoggedIn) {
                                 </div>
                             </div>
 
+                            <div class="mb-4">
+                                <input id="holdings-search" type="text" placeholder="Search by symbol or source..."
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                                    oninput="filterAndRenderHoldings()" />
+                            </div>
+
                             <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                                 <table class="w-full">
                                     <thead>
                                         <tr class="border-b border-gray-100 bg-gray-50/50">
-                                            <th class="text-left text-xs font-medium text-gray-500 px-4 py-3">Asset Symbol
+                                            <th onclick="sortHoldings('symbol')" class="text-left text-xs font-medium text-gray-500 px-4 py-3 cursor-pointer hover:text-black transition-colors select-none">
+                                                Asset Symbol <span id="sort-icon-symbol" class="ml-1"></span>
                                             </th>
-                                            <th class="text-right text-xs font-medium text-gray-500 px-4 py-3">Quantity</th>
-                                            <th class="text-right text-xs font-medium text-gray-500 px-4 py-3">Current Price
+                                            <th onclick="sortHoldings('qty')" class="text-right text-xs font-medium text-gray-500 px-4 py-3 cursor-pointer hover:text-black transition-colors select-none">
+                                                Quantity <span id="sort-icon-qty" class="ml-1"></span>
                                             </th>
-                                            <th class="text-right text-xs font-medium text-gray-500 px-4 py-3">Total Value
+                                            <th onclick="sortHoldings('price')" class="text-right text-xs font-medium text-gray-500 px-4 py-3 cursor-pointer hover:text-black transition-colors select-none">
+                                                Current Price <span id="sort-icon-price" class="ml-1"></span>
+                                            </th>
+                                            <th onclick="sortHoldings('value')" class="text-right text-xs font-medium text-gray-500 px-4 py-3 cursor-pointer hover:text-black transition-colors select-none">
+                                                Total Value <span id="sort-icon-value" class="ml-1"></span>
                                             </th>
                                             <th class="text-right text-xs font-medium text-gray-500 px-4 py-3">Source
                                             </th>
@@ -518,7 +529,8 @@ if ($isLoggedIn) {
         let yfPortfolio = null;
         let rhStocks = null;
         let yfStocks = null;
-        let currentFilter = "all";
+        let holdingsSortKey = 'symbol';
+        let holdingsSortDir = 'asc';
         let isSignup = false;
 
         // ---- Auth ----
@@ -623,10 +635,9 @@ if ($isLoggedIn) {
         }
 
         function showDashboard(user) {
-            document.getElementById("auth-screen").classList.add("hidden");
-            document.getElementById("dashboard").classList.remove("hidden");
-            document.getElementById("user-greeting").textContent = "Hi, " + user.username;
-            fetchData();
+            // Reload the page so the server re-renders with the correct session state
+            // (empty state vs. holdings, greeting, admin link, etc.)
+            window.location.reload();
         }
 
 
@@ -680,7 +691,8 @@ async function fetchData() {
 
         // 2. Render Holdings (Right Column)
         if (portfolioRes.ok && portfolioData.holdings) {
-            renderHoldings(portfolioData.holdings);
+            userHoldings = portfolioData.holdings;
+            filterAndRenderHoldings();
             updateNetWorth(portfolioData.holdings);
         }
     } catch (err) {
@@ -834,6 +846,93 @@ async function fetchData() {
                 tbody.appendChild(row);
             });
         }
+        function filterAndRenderHoldings() {
+            const tbody = document.getElementById("holdings-table");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            const searchInput = document.getElementById("holdings-search");
+            const query = searchInput ? searchInput.value.toLowerCase() : "";
+
+            const aggregated = getAggregatedHoldings(userHoldings);
+            let entries = Object.values(aggregated);
+
+            // Filter by search query
+            if (query) {
+                entries = entries.filter(data => {
+                    if (data.symbol.toLowerCase().includes(query)) return true;
+                    return Array.from(data.sources).some(s => s.toLowerCase().includes(query));
+                });
+            }
+
+            // Sort
+            entries.sort((a, b) => {
+                let aVal, bVal;
+                if (holdingsSortKey === 'symbol') {
+                    aVal = a.symbol; bVal = b.symbol;
+                    return holdingsSortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                }
+                if (holdingsSortKey === 'qty') { aVal = a.qty; bVal = b.qty; }
+                else if (holdingsSortKey === 'price') { aVal = a.price; bVal = b.price; }
+                else if (holdingsSortKey === 'value') { aVal = a.qty * a.price; bVal = b.qty * b.price; }
+                else { aVal = a.symbol; bVal = b.symbol; return aVal.localeCompare(bVal); }
+                return holdingsSortDir === 'asc' ? aVal - bVal : bVal - aVal;
+            });
+
+            if (entries.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-12 text-gray-400">No holdings found.</td></tr>';
+                updateSortIcons();
+                return;
+            }
+
+            entries.forEach(data => {
+                const totalValue = data.qty * data.price;
+                const row = document.createElement("tr");
+                row.className = "border-b border-gray-50 hover:bg-gray-50/50 transition-colors";
+
+                const sourceTags = Array.from(data.sources).map(src => `
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-gray-100 text-gray-400 border border-gray-200">
+                        ${src}
+                    </span>
+                `).join("");
+
+                row.innerHTML = `
+                    <td class="px-4 py-4 text-sm font-medium text-black">${data.symbol}</td>
+                    <td class="px-4 py-4 text-sm text-right text-gray-600">${data.qty.toLocaleString()}</td>
+                    <td class="px-4 py-4 text-sm text-right text-gray-600">${fmt(data.price)}</td>
+                    <td class="px-4 py-4 text-sm text-right font-medium text-black">${fmt(totalValue)}</td>
+                    <td class="px-4 py-4 text-sm text-right">
+                        <div class="flex justify-end gap-1 flex-wrap">${sourceTags}</div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            updateSortIcons();
+        }
+
+        function sortHoldings(key) {
+            if (holdingsSortKey === key) {
+                holdingsSortDir = holdingsSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                holdingsSortKey = key;
+                holdingsSortDir = 'asc';
+            }
+            filterAndRenderHoldings();
+        }
+
+        function updateSortIcons() {
+            ['symbol', 'qty', 'price', 'value'].forEach(key => {
+                const icon = document.getElementById('sort-icon-' + key);
+                if (!icon) return;
+                if (key === holdingsSortKey) {
+                    icon.textContent = holdingsSortDir === 'asc' ? '\u2191' : '\u2193';
+                } else {
+                    icon.textContent = '';
+                }
+            });
+        }
+
         function renderMarketOverview() {
             const grid = document.getElementById("market-grid");
             const indices = [

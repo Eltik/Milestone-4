@@ -178,6 +178,13 @@ elseif ($uri === "/api/sources/connect" && $method === "POST") {
     // 1. Capture the provider name from the request (e.g., 'robinhood' or 'yahoo')
     $providerName = $body["provider"] ?? 'robinhood';
 
+    // Check if this provider is already connected
+    $existing = Database\Connectors::getConnectorByUserAndProvider($conn, $userId, $providerName);
+    if ($existing) {
+        jsonResponse(409, ["error" => "Provider already connected"]);
+        exit;
+    }
+
     $authInfo = [
         "simulated" => true,
         "provider" => $providerName

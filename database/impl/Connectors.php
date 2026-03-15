@@ -93,6 +93,29 @@
             return $connectors;
         }
 
+        public static function getConnectorByUserAndProvider(\mysqli $conn, string $userId, string $provider): ?Connectors {
+            $stmt = mysqli_prepare($conn, "SELECT * FROM connectors WHERE user_id = ? AND JSON_UNQUOTE(JSON_EXTRACT(authentication_information, '$.provider')) = ?");
+            mysqli_stmt_bind_param($stmt, "ss", $userId, $provider);
+            mysqli_stmt_execute($stmt);
+
+            $result = mysqli_stmt_get_result($stmt);
+            $row = mysqli_fetch_assoc($result);
+            mysqli_stmt_close($stmt);
+
+            if (!$row) {
+                return null;
+            }
+
+            return new Connectors(
+                $row["id"],
+                $row["user_id"],
+                json_decode($row["authentication_information"], true) ?? [],
+                json_decode($row["portfolio"], true) ?? [],
+                $row["created_at"],
+                $row["updated_at"]
+            );
+        }
+
         public function insertConnector(\mysqli $conn): bool {
             $stmt = mysqli_prepare($conn,
                 "INSERT INTO connectors (id, user_id, authentication_information, portfolio, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)"

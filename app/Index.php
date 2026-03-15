@@ -136,6 +136,35 @@
         jsonResponse(200, array_map('connectorToArray', $connectors));
     }
 
+    // ADMIN: Search Users
+    elseif ($uri === "/api/admin/users/search" && $method === "GET") {
+        if (empty($_SESSION["user_id"])) {
+            jsonResponse(401, ["error" => "Not authenticated"]);
+            exit;
+        }
+        $currentUser = Database\User::getUser($conn, $_SESSION["user_id"]);
+        if (!$currentUser || !$currentUser->isAdmin()) {
+            jsonResponse(403, ["error" => "Forbidden"]);
+            exit;
+        }
+
+        $query = $_GET["query"] ?? '';
+        $page = max(1, (int)($_GET["page"] ?? 1));
+        $perPage = max(1, min(50, (int)($_GET["perPage"] ?? 10)));
+        $sort = $_GET["sort"] ?? 'created_at';
+        $sortDirection = $_GET["sortDirection"] ?? 'DESC';
+
+        $searchResult = Database\User::searchUsers($conn, $query, $page, $perPage, $sort, $sortDirection);
+
+        jsonResponse(200, [
+            "results" => array_map('userToArray', $searchResult["results"]),
+            "total" => $searchResult["total"],
+            "lastPage" => $searchResult["lastPage"],
+            "page" => $page,
+            "perPage" => $perPage
+        ]);
+    }
+
 // CONNECT: Simulate Brokerage Connection
 elseif ($uri === "/api/sources/connect" && $method === "POST") {
     if (empty($_SESSION["user_id"])) {

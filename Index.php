@@ -54,10 +54,136 @@ if ($uri === "/admin") {
         <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <h1 class="text-2xl font-medium mb-2">Admin Panel</h1>
             <p class="text-gray-500 mb-8">Welcome, <?php echo htmlspecialchars($adminUser->username); ?>.</p>
-            <div class="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                <p class="text-sm text-gray-600">Admin functionality coming soon.</p>
+
+            <!-- User Search -->
+            <div class="mb-6">
+                <h2 class="text-lg font-medium mb-4">Search Users</h2>
+                <div class="flex gap-3 mb-4">
+                    <input id="search-input" type="text" placeholder="Search by username, email, or phone..."
+                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent" />
+                    <select id="sort-select"
+                        class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
+                        <option value="created_at">Date Created</option>
+                        <option value="username">Username</option>
+                        <option value="email">Email</option>
+                        <option value="role">Role</option>
+                    </select>
+                    <select id="direction-select"
+                        class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
+                        <option value="DESC">Desc</option>
+                        <option value="ASC">Asc</option>
+                    </select>
+                    <button onclick="searchUsers()"
+                        class="bg-black text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-gray-800 transition-colors">
+                        Search
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Table -->
+            <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-100 bg-gray-50/50">
+                            <th class="text-left text-xs font-medium text-gray-500 px-4 py-3">Username</th>
+                            <th class="text-left text-xs font-medium text-gray-500 px-4 py-3">Email</th>
+                            <th class="text-left text-xs font-medium text-gray-500 px-4 py-3">Phone</th>
+                            <th class="text-left text-xs font-medium text-gray-500 px-4 py-3">Role</th>
+                            <th class="text-left text-xs font-medium text-gray-500 px-4 py-3">Created</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table">
+                        <tr>
+                            <td colspan="5" class="text-center text-sm text-gray-400 px-4 py-8">
+                                Search for users above.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div id="pagination" class="flex items-center justify-between mt-4 hidden">
+                <p id="result-info" class="text-sm text-gray-500"></p>
+                <div class="flex gap-2">
+                    <button id="prev-btn" onclick="changePage(-1)"
+                        class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
+                        Previous
+                    </button>
+                    <button id="next-btn" onclick="changePage(1)"
+                        class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
+                        Next
+                    </button>
+                </div>
             </div>
         </main>
+
+        <script>
+            let currentPage = 1;
+            let lastPage = 1;
+
+            document.getElementById('search-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') searchUsers();
+            });
+
+            async function searchUsers(page = 1) {
+                currentPage = page;
+                const query = document.getElementById('search-input').value;
+                const sort = document.getElementById('sort-select').value;
+                const sortDirection = document.getElementById('direction-select').value;
+
+                const params = new URLSearchParams({ query, page, perPage: 10, sort, sortDirection });
+                const res = await fetch('/api/admin/users/search?' + params);
+                const data = await res.json();
+
+                lastPage = data.lastPage;
+                renderResults(data);
+            }
+
+            function renderResults(data) {
+                const tbody = document.getElementById('users-table');
+                tbody.innerHTML = '';
+
+                if (data.results.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-sm text-gray-400 px-4 py-8">No users found.</td></tr>';
+                    document.getElementById('pagination').classList.add('hidden');
+                    return;
+                }
+
+                data.results.forEach(user => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-gray-50 hover:bg-gray-50/50 transition-colors';
+                    const roleBadge = user.role === 'admin'
+                        ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-black text-white">Admin</span>'
+                        : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-gray-100 text-gray-500 border border-gray-200">User</span>';
+                    row.innerHTML = `
+                        <td class="px-4 py-4 text-sm font-medium text-black">${user.username}</td>
+                        <td class="px-4 py-4 text-sm text-gray-600">${user.email}</td>
+                        <td class="px-4 py-4 text-sm text-gray-600">${user.phone}</td>
+                        <td class="px-4 py-4 text-sm">${roleBadge}</td>
+                        <td class="px-4 py-4 text-sm text-gray-500">${new Date(user.createdAt).toLocaleDateString()}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Update pagination
+                const pagination = document.getElementById('pagination');
+                pagination.classList.remove('hidden');
+                document.getElementById('result-info').textContent = `Page ${currentPage} of ${lastPage} (${data.total} total)`;
+                document.getElementById('prev-btn').disabled = currentPage <= 1;
+                document.getElementById('next-btn').disabled = currentPage >= lastPage;
+            }
+
+            function changePage(delta) {
+                const newPage = currentPage + delta;
+                if (newPage >= 1 && newPage <= lastPage) {
+                    searchUsers(newPage);
+                }
+            }
+
+            // Load all users on page load
+            searchUsers();
+        </script>
     </body>
     </html>
     <?php

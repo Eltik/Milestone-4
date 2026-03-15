@@ -159,6 +159,87 @@
             );
         }
 
+        /**
+         * Search users by query string across username, email, and phone.
+         * returning { results, total, lastPage }.
+         *
+         * @return array{results: User[], total: int, lastPage: int}
+         */
+        public static function searchUsers(
+            \mysqli $conn,
+            string $query = '',
+            int $page = 1,
+            int $perPage = 10,
+            string $sort = 'created_at',
+            string $sortDirection = 'DESC'
+        ): array {
+            // Whitelist allowed sort columns
+            $allowedSorts = ['username', 'email', 'role', 'created_at', 'updated_at'];
+            if (!in_array($sort, $allowedSorts)) {
+                $sort = 'created_at';
+            }
+            $sortDirection = strtoupper($sortDirection) === 'ASC' ? 'ASC' : 'DESC';
+
+            $offset = $page > 0 ? $perPage * ($page - 1) : 0;
+
+            // Build WHERE clause: LIKE match across multiple columns
+            $where = "";
+            $likeParam = "";
+            if (!empty($query)) {
+                $where = "WHERE (username LIKE ? OR email LIKE ? OR phone LIKE ?)";
+                $likeParam = "%" . $query . "%";
+            }
+
+            // Count query for total results
+            $countSql = "SELECT COUNT(*) as count FROM users $where";
+            // Data query with sorting and pagination
+            $dataSql = "SELECT * FROM users $where ORDER BY $sort $sortDirection LIMIT ? OFFSET ?";
+
+            // Execute count query
+            $countStmt = mysqli_prepare($conn, $countSql);
+            if (!empty($query)) {
+                mysqli_stmt_bind_param($countStmt, "sss", $likeParam, $likeParam, $likeParam);
+            }
+            mysqli_stmt_execute($countStmt);
+            $countResult = mysqli_stmt_get_result($countStmt);
+            $total = (int)(mysqli_fetch_assoc($countResult)["count"] ?? 0);
+            mysqli_stmt_close($countStmt);
+
+            // Execute data query
+            $dataStmt = mysqli_prepare($conn, $dataSql);
+            if (!empty($query)) {
+                mysqli_stmt_bind_param($dataStmt, "sssii", $likeParam, $likeParam, $likeParam, $perPage, $offset);
+            } else {
+                mysqli_stmt_bind_param($dataStmt, "ii", $perPage, $offset);
+            }
+            mysqli_stmt_execute($dataStmt);
+            $dataResult = mysqli_stmt_get_result($dataStmt);
+
+            $results = [];
+            while ($row = mysqli_fetch_assoc($dataResult)) {
+                $results[] = new User(
+                    $row["id"],
+                    $row["email"],
+                    $row["phone"],
+                    $row["username"],
+                    $row["password_hash"],
+                    $row["created_at"],
+                    $row["updated_at"],
+                    json_decode($row["connector_ids"], true) ?? [],
+                    $row["role"] ?? 'user'
+                );
+            }
+            mysqli_stmt_close($dataStmt);
+
+            $lastPage = $perPage > 0 ? (int)ceil($total / $perPage) : 1;
+
+            return [
+                "results" => $results,
+                "total" => $total,
+                "lastPage" => $lastPage
+            ];
+        }
+
         public function verifyPassword(string $password): bool {
             return password_verify($password, $this->passwordHash);
         }

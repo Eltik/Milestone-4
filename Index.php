@@ -951,6 +951,7 @@ async function fetchData() {
 
         function updateNetWorth(rawHoldings) {
             let total = 0;
+            let holdingsCount = 0;
 
             // rawHoldings is an object where keys are Tickers
             Object.values(rawHoldings || {}).forEach(item => {
@@ -958,6 +959,7 @@ async function fetchData() {
                 // Fallback to 150 (or any number) if item.price is missing
                 const p = parseFloat(item.price) || 150;
                 total += (q * p);
+                holdingsCount++;
             });
 
             const netWorthEl = document.getElementById("net-worth");
@@ -965,7 +967,11 @@ async function fetchData() {
                 netWorthEl.textContent = fmt(total);
             }
 
-            // Also update the "Last Updated" timestamp
+            const changeText = document.getElementById("net-worth-change-text");
+            if (changeText) {
+                changeText.textContent = holdingsCount + " holding" + (holdingsCount !== 1 ? "s" : "");
+            }
+
             const lastUpdatedEl = document.getElementById("last-updated");
             if (lastUpdatedEl) {
                 lastUpdatedEl.textContent = "Last updated: " + new Date().toLocaleTimeString();
